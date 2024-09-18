@@ -24,7 +24,7 @@ Gabriele Goletto, Tushar Nagarajan, Giuseppe Averta, Dima Damen
 Clone this repository and create a Conda environment:
 
 ```bash
-git clone --recursive https://github.com/yourusername/AMEGO
+git clone --recursive https://github.com/gabrielegoletto/AMEGO
 cd AMEGO
 conda env create -f amego.yml
 conda activate amego
