@@ -38,7 +38,7 @@ Download Tracker Weights
 Download the weights from [this link](https://drive.google.com/file/d/14vZmWxYSGJXZGxD5U1LthvvTR_eRzWCw/view) and save them in `model_checkpoints/`.
 
 The expected data stucture for EPIC-KITCHENS videos is:
-<root>
+```<root>
 │
 ├── EPIC-KITCHENS/
 │   ├── <p_id>/
@@ -60,10 +60,11 @@ The expected data stucture for EPIC-KITCHENS videos is:
 │   └── ...
 │
 └── ...
-
+```
 
 The expected data structure for new videos is:
-<root>
+
+```<root>
 │
 ├── <video_id>/
 │   ├── rgb_frames/
@@ -80,6 +81,7 @@ The expected data structure for new videos is:
 │       └── <video_id>.pkl
 │
 └── ...
+```
 
 **2. (Optional) Extract optical flow**
 
