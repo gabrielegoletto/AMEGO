@@ -7,6 +7,3 @@
 [submodule "submodules/hand_object_detector"]
 	path = submodules/hand_object_detector
 	url = git@github.com:ddshan/hand_object_detector.git
-[submodule "submodules/episodic_memory"]
-	path = submodules/episodic_memory
-	url = git@github.com:EGO4D/episodic-memory.git

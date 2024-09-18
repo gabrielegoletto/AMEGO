@@ -1,0 +1,30 @@
+root: '/data' # Root directory of the dataset
+output_dir: '.' # Output directory
+fps: !!float inf # Frames per second for the processing
+v_id: 'P02_12'
+dset: 'epic'
+
+# specific for location segments
+hand_det_score: 0.1 # Minimum score for hand detection
+consecutive: 5 # Minimum number of consecutive frames to form a track
+flow_threshold: 2000 # Threshold for optical flow magnitude
+clustering_threshold_ls: 0.5 # Threshold for clustering location segments
+no_filter_flow: false # If True, don't filter frames based on optical flow
+no_filter_hands: false # If True, don't filter frames based on hand presence
+
+# specific for HOI segments
+hoi_iou_threshold: 0.5 # IOU threshold for human-object interaction bounding boxes
+tracker_hoi_iou: 0.5 # IOU threshold for tracker detections to be matched to an existing track
+iou_nms_tracker: 0.5 # IOU threshold for non-maximum suppression of trackers
+num_steps: 20 # Number of steps in a window to consider a track active
+num_steps_no_object: 20 # Number of consecutive steps without detection to consider a track ended
+window_dim: 30 # Dimension of the window for active track consideration
+clustering_threshold_hoi: 0.6  # Threshold for clustering HOI tracks
+consider_hand_presence: true # Whether to consider hand presence as a trigger to increase num_steps_no_object
+tracker_usage: true # Whether to use object trackers and not only HOI detections
+
+# specific for new videos
+dset_kwargs:
+  frame_shape: null # (width, height) of the frames
+  fps: null # Frames per second of the video
+  num_frames: null # Number of frames in the video
