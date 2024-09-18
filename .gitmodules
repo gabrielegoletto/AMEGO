@@ -1,0 +1,12 @@
+[submodule "submodules/flowformer"]
+	path = submodules/flowformer
+	url = git@github.com:drinkingcoder/FlowFormer-Official.git
+[submodule "submodules/epic-kitchens-100-hand-object-bboxes"]
+	path = submodules/epic-kitchens-100-hand-object-bboxes
+	url = https://github.com/gabrielegoletto/epic-kitchens-100-hand-object-bboxes.git
+[submodule "submodules/hand_object_detector"]
+	path = submodules/hand_object_detector
+	url = git@github.com:ddshan/hand_object_detector.git
+[submodule "submodules/episodic_memory"]
+	path = submodules/episodic_memory
+	url = git@github.com:EGO4D/episodic-memory.git
