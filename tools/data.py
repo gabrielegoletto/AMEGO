@@ -167,6 +167,7 @@ class FlowDataset:
         Args:
             index (int): index of the frame in the dataset
         """
+        index = index - 1
         frame = self.frames[index]
         frame_number = frame[1]
         img = (self.v_id, frame_number)

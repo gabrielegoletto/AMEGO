@@ -12,7 +12,7 @@ from omegaconf import OmegaConf
 
 class OnlineClusteringTrack:
     def __init__(self, clustering_threshold):
-        self.cosine = torch.nn.CosineSimilarity(dim=1)
+        self.cosine = torch.nn.CosineSimilarity(dim=-1)
         self.threshold = clustering_threshold
         self.clusters = {}
         self.track2cluster = {}
@@ -53,7 +53,9 @@ class LS_AMEGO:
         self.no_filter_flow = config.no_filter_flow
         self.no_filter_hands = config.no_filter_hands
         
-        self.net = self._initialize_network()
+        net = self._initialize_network()
+        self.net = nn.DataParallel(net)
+        self.net.eval().cuda()
         self.dataset = FrameDsetSubsampled(root, self.fps, self.v_id, dset.name, kwargs={'video_cfg': config.dset_kwargs})
         self.flow_dataset = FlowDataset(root, self.fps, self.v_id, dset.name, kwargs={'video_cfg': config.dset_kwargs})
         self.detections = load_detections(self.dataset.dset.detections_path(self.v_id))
@@ -68,6 +70,19 @@ class LS_AMEGO:
     def _initialize_network(self):
         net = torch.hub.load("facebookresearch/swag", model="vit_l16_in1k")
         net.head = nn.Identity()
+        resolution = 512
+        model_transforms = transforms.Compose([
+            transforms.Resize(
+                resolution,
+                interpolation=transforms.InterpolationMode.BICUBIC,
+            ),
+            transforms.CenterCrop(resolution),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+            ),
+        ])
+        self.dataset.dset.transform = model_transforms
         return net
 
     def step(self, frame_idx):
