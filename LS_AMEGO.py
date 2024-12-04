@@ -53,12 +53,13 @@ class LS_AMEGO:
         self.no_filter_flow = config.no_filter_flow
         self.no_filter_hands = config.no_filter_hands
         
+        self.dataset = FrameDsetSubsampled(root, self.fps, self.v_id, dset.name, video_fps=config.video_fps)
+        self.flow_dataset = FlowDataset(root, self.fps, self.v_id, dset.name, video_fps=config.video_fps)
+        self.detections = load_detections(self.dataset.dset.detections_path(self.v_id))
+
         net = self._initialize_network()
         self.net = nn.DataParallel(net)
         self.net.eval().cuda()
-        self.dataset = FrameDsetSubsampled(root, self.fps, self.v_id, dset.name, kwargs={'video_cfg': config.dset_kwargs})
-        self.flow_dataset = FlowDataset(root, self.fps, self.v_id, dset.name, kwargs={'video_cfg': config.dset_kwargs})
-        self.detections = load_detections(self.dataset.dset.detections_path(self.v_id))
 
         self.grouped_tracks = []
         self.group = []
@@ -152,6 +153,7 @@ def parse_args(config_keys):
     parser = argparse.ArgumentParser(description='Modify configuration parameters.')
     for key in config_keys:
         parser.add_argument(f'--{key}', type=str, help=f'Override {key}')
+    parser.add_argument('--video_fps', type=float, help='FPS of the video to be processed')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -169,13 +171,14 @@ if __name__ == '__main__':
             elif isinstance(config[key], float):
                 value = float(value)
             config[key] = value
-
+    
+    config.video_fps = args.video_fps
     if config.dset == 'epic':
         from tools.data import EPICDataset
         dset = EPICDataset(config.root)
     else:
         from tools.data import SingleVideoDataset
-        dset = SingleVideoDataset(config.root, config.v_id, config)
+        dset = SingleVideoDataset(config.root, config.v_id, config.video_fps)
 
     processor = LS_AMEGO(dset, config.root, config)
     processor.process()

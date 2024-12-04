@@ -94,8 +94,9 @@ Download the Flowformer model trained on the Sintel dataset from [this link](htt
 Run the following command to extract flow data:
 
 ```bash
-python -m tools.generate_flowformer_flow --root <root> --v_id <video_id> --dset <epic|video> --models_root submodules/flowformer/models --model sintel
+python -m tools.generate_flowformer_flow --root <root> --v_id <video_id> --dset <epic|video> --models_root submodules/flowformer/models --model sintel --video_fps <video_fps>
 ```
+`video_fps` is needed just for non-EPIC videos
 
 **3. (Optional) Extract HOI detections (already given for EPIC-KITCHENS videos)**
 
@@ -122,14 +123,14 @@ pip install imageio
 Run Extraction Script
 
 ```bash
-python -m tools.extract_bboxes --image_dir <root>/<video_id>/rgb_frames --cuda --mGPUs --checksession 1 --checkepoch 8 --checkpoint 132028 --bs 32
+python -m tools.extract_bboxes --image_dir <root>/<video_id>/rgb_frames --cuda --mGPUs --checksession 1 --checkepoch 8 --checkpoint 132028 --bs 32 --detections_pb <video_id>.pb2
 ```
 
 Format Bounding Boxes
 
 ```bash
-mkdir -p <video_id>/hand-objects/
-python -m submodules.epic-kitchens-100-hand-object-bboxes.src.scripts.convert_raw_to_releasable_detections <video_id>.pb2 <video_id>.pkl --frame-height <video_height> --frame-width <video_width>
+mkdir -p <root>/<video_id>/hand-objects/
+python -m submodules.epic-kitchens-100-hand-object-bboxes.src.scripts.convert_raw_to_releasable_detections <video_id>.pb2 <root>/<video_id>/hand-objects/<video_id>.pkl --frame-height <video_height> --frame-width <video_width>
 ```
 
 If there are issues with the `detections_pb2` file, run:
@@ -142,18 +143,34 @@ protoc -I ./tools/detection_types/ --python_out=. ./tools/detection_types/detect
 
 AMEGO extraction can be customized by adjusting configuration parameters. You can modify the configuration either by directly changing the values in the [default.yaml](./configs/default.yaml) file or by passing arguments via the command line interface (CLI).
 
-**1. Extract Interaction Tracklets**
+**1. Preparation (for new videos only)**
+This script extracts frames from a video (resized to 456x256), computes the optical flow using FlowFormer, and extracts hand-object bounding boxes. It is a shortcut for automatically computing steps 1 to 3 above.
+```bash
+bash prepare_video.py <video_path> <video_fps>
+```
+
+**2. Extract Interaction Tracklets**
 
 ```bash
 python HOI_AMEGO.py
 ```
 
-**2. Extract Location Segments**
+for new videos:
+```bash
+python HOI_AMEGO.py --dset video --v_id <video_id> --video_fps <video_fps>
+```
+
+
+**3. Extract Location Segments**
 
 ```bash
 python LS_AMEGO.py
 ```
 
+for new videos:
+```bash
+python LS_AMEGO.py --dset video --v_id <video_id> --video_fps <video_fps>
+```
 
 #### Output Structure
 

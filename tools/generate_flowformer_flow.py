@@ -15,7 +15,7 @@ if core_path not in sys.path:
 from submodules.flowformer.configs.sintel import get_cfg
 from submodules.flowformer.core.FlowFormer import build_flowformer
 
-def generate_flowformer_flow(root, fps, v_id, dset):
+def generate_flowformer_flow(root, fps, video_fps, v_id, dset):
     
     cfg = get_cfg()
     cfg.update(vars(args))
@@ -29,7 +29,7 @@ def generate_flowformer_flow(root, fps, v_id, dset):
     model.cuda()
     model.eval()
     
-    dataset = FlowFormerDataset(root, fps, v_id, dset)
+    dataset = FlowFormerDataset(root, fps, v_id, dset, video_fps=video_fps)
     loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=8)
     flow_path = dataset.dset.flowformer_root(v_id)
     os.makedirs(flow_path, exist_ok=True)
@@ -51,10 +51,11 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', type=str, default='/data')
     parser.add_argument('--fps', type=float, default=float('inf'))
+    parser.add_argument('--video_fps', type=float)
     parser.add_argument('--v_id', default=None, help='video or kitchen ID')
     parser.add_argument('--dset', type=str, default='epic')
     parser.add_argument('--models_root', type=str, default='submodules/flowformer/models')
     parser.add_argument('--model', type=str, default='sintel')
     args = parser.parse_args()
     
-    generate_flowformer_flow(args.root, args.fps, args.v_id, args.dset)
+    generate_flowformer_flow(args.root, args.fps, args.video_fps, args.v_id, args.dset)

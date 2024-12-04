@@ -573,7 +573,7 @@ def parse_args(config_keys):
     # Add arguments based on config keys
     for key in config_keys:
         parser.add_argument(f'--{key}', type=str, help=f'Override {key}')
-
+    parser.add_argument('--video_fps', type=float, help='FPS of the video to be processed')
     return parser.parse_args()
 
 
@@ -598,15 +598,12 @@ if __name__ == '__main__':
             elif isinstance(config[key], float):
                 value = float(value)
             config[key] = value
-
-        
-    dataset = ObjectFrameDsetSubsampled(config.root, config.fps, config.v_id, config.dset, hand_score=0.1, object_score=0.01)
-    
+    config.video_fps = args.video_fps
     if config.dset == 'epic':
         dset = EPICDataset(config.root)
     else:
-        dset = SingleVideoDataset(config.root, config.v_id, config)
-        
+        dset = SingleVideoDataset(config.root, config.v_id, config.video_fps)
+    dataset = ObjectFrameDsetSubsampled(config.root, config.fps, config.v_id, config.dset, hand_score=0.1, object_score=0.01, video_fps=config.video_fps)        
     config.total_frames = dset.video_length[config.v_id]
     tracker = TrackManager(dset=dset, root=config.root, config=config)
     

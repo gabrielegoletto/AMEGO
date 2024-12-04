@@ -9,6 +9,27 @@ import torch
 import numpy as np
 import math
 from torchvision.transforms.functional import crop
+import cv2
+
+def get_video_metadata(frames_folder):
+    frame_files = sorted(
+        [f for f in os.listdir(frames_folder) if f.endswith(('.jpg', '.png'))]
+    )
+
+    if not frame_files:
+        raise ValueError(f"No image frames found in {frames_folder}")
+
+    # Read the first frame to get the shape
+    first_frame_path = os.path.join(frames_folder, frame_files[0])
+    first_frame = cv2.imread(first_frame_path)
+    
+    if first_frame is None:
+        raise ValueError(f"Cannot read the first frame from {first_frame_path}")
+    
+    frame_shape = first_frame.shape[:2][::-1] 
+    num_frames = len(frame_files)
+
+    return frame_shape, num_frames
 
 class EPICDataset():
     def __init__(self, root):
@@ -52,43 +73,46 @@ class EPICDataset():
 
 
 class SingleVideoDataset:
-    def __init__(self, root, v_id, video_cfg):
+    def __init__(self, root, v_id, fps):
         self.root = root
-        self.v_id = v_id
-        self.frame_shape = {v_id: video_cfg.frame_shape} 
-        self.transform = default_transform('val')
-        self.video_fps = {v_id: video_cfg.fps}
-        self.video_length = {v_id: video_cfg.num_frames} 
+        frame_shape, video_length = get_video_metadata(os.path.join(self.root, f'{v_id}/rgb_frames'))
+        print(f"Frame shape: {frame_shape}, FPS: {fps}, Video length: {video_length} frames")
+        
+        self.frame_shape = {v_id: frame_shape}
+        self.video_fps = {v_id: fps}
+        self.video_length = {v_id: video_length}
         self.transform = default_transform('val')
         self.name = 'video'
         
-    def frame_path(self, f_id):
+    def frame_path(self, img):
+        v_id, f_id = img
         # Path for a specific frame in the video
-        file = os.path.join(self.root, f'{self.v_id}/rgb_frames/frame_{f_id:010d}.jpg')
+        file = os.path.join(self.root, f'{v_id}/rgb_frames/frame_{f_id:010d}.jpg')
         return file
     
-    def flowformer_path(self, f_id):
+    def flowformer_path(self, img):
+        v_id, f_id = img
         # Path for a specific flowformer file in the video
-        file = os.path.join(self.root, f'{self.v_id}/flowformer/flow_{f_id:010d}.pth')
+        file = os.path.join(self.root, f'{v_id}/flowformer/flow_{f_id:010d}.pth')
         return file        
 
-    def load_image(self, f_id):
+    def load_image(self, img):
         # Load and return the image for a specific frame
-        file = self.frame_path(f_id)
+        file = self.frame_path(img)
         img = Image.open(file).convert('RGB')
         return img
     
-    def frames_root(self):
+    def frames_root(self, v_id):
         # Root path for all RGB frames in the video
-        return os.path.join(self.root, f'{self.v_id}/rgb_frames')
+        return os.path.join(self.root, f'{v_id}/rgb_frames')
     
-    def flowformer_root(self):
+    def flowformer_root(self, v_id):
         # Root path for all flowformer files in the video
-        return os.path.join(self.root, f'{self.v_id}/flowformer')
+        return os.path.join(self.root, f'{v_id}/flowformer')
         
-    def detections_path(self):
+    def detections_path(self, v_id):
         # Path for detections file, if applicable
-        return os.path.join(self.root, f'{self.v_id}/hand-objects/{self.v_id}.pkl')
+        return os.path.join(self.root, f'{v_id}/hand-objects/{v_id}.pkl')
 
     
 # subsampled frames desired fps for graph construction
@@ -101,7 +125,7 @@ class FrameDsetSubsampled:
         if origin == 'epic':
             self.dset = EPICDataset(root)
         else:
-            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_cfg'))
+            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_fps', 30))
                     
         frames = []
         video_fps = self.dset.video_fps[self.v_id]
@@ -144,7 +168,7 @@ class FlowDataset:
         if origin == 'epic':
             self.dset = EPICDataset(root)
         else:
-            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_cfg'))
+            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_fps', 30))
                                 
         frames = []
         video_fps = self.dset.video_fps[self.v_id]
@@ -187,7 +211,7 @@ class FlowFormerDataset:
         if origin == 'epic':
             self.dset = EPICDataset(root)
         else:
-            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_cfg'))
+            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_fps', 30))
                     
         frames = []
         video_fps = self.dset.video_fps[self.v_id]
@@ -237,7 +261,7 @@ class ObjectFrameDsetSubsampled:
         if origin == 'epic':
             self.dset = EPICDataset(root)
         else:
-            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_cfg'))
+            self.dset = SingleVideoDataset(root, v_id, kwargs.get('video_fps', 30))
                     
         frames = []
         video_fps = self.dset.video_fps[self.v_id]
