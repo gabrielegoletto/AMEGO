@@ -144,7 +144,7 @@ protoc -I ./tools/detection_types/ --python_out=. ./tools/detection_types/detect
 AMEGO extraction can be customized by adjusting configuration parameters. You can modify the configuration either by directly changing the values in the [default.yaml](./configs/default.yaml) file or by passing arguments via the command line interface (CLI).
 
 **1. Preparation (for new videos only)**
-This script extracts frames from a video (resized to 456x256), computes the optical flow using FlowFormer, and extracts hand-object bounding boxes. It is a shortcut for automatically computing steps 1 to 3 above.
+This script extracts frames from a video (resized to 456x256), computes the optical flow using FlowFormer, and extracts hand-object bounding boxes. It is a shortcut for automatically computing steps 2 and 3 above.
 ```bash
 bash prepare_video.py <video_path> <video_fps>
 ```
